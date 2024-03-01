@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Feedback from "./components/Feedback";
 import Options from "./components/Options";
 import Description from "./components/Description";
+import Notification from "./components/Notification";
 
 function App() {
   const [rating, setRating] = useState({
@@ -30,14 +31,37 @@ function App() {
     localStorage.removeItem(`currentFeedback`);
   };
 
+  // Деструктурируем состояние рейтинга для получения отдельных счетчиков отзывоd
+  const { good, neutral, bad } = rating;
+  const totalFeedback = good + neutral + bad;
+
+  // useEffect для загрузки данных из localStorage при монтировании компонента.
+
+  useEffect(() => {
+    if (JSON.parse(localStorage.getItem(`currentFeedback`)) === null) return;
+
+    setRating({ ...JSON.parse(localStorage.getItem(`currentFeedback`)) }); // Устанавливаем состояние рейтинга из данных localStorage.
+  }, []);
+
+  //сохранении данных в localStorage при изменении рейтинга или общего количества отзывов.
+  useEffect(() => {
+    if (totalFeedback === 0) return;
+    localStorage.setItem(`currentFeedback`, JSON.stringify(rating));
+  }, [rating, totalFeedback]);
+
   return (
     <div>
       <Description />
       <Options
         updateFeedback={updateFeedback}
         updateResetRating={updateResetRating}
+        amountRating={totalFeedback}
       />
-      <Feedback rating={rating} />
+      {totalFeedback > 0 ? (
+        <Feedback rating={rating} totalFeedback={totalFeedback} />
+      ) : (
+        <Notification />
+      )}
     </div>
   );
 }
