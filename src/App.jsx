@@ -9,7 +9,7 @@ function App() {
     neutral: 0,
     bad: 0,
   });
-
+  // обновление состояния и обработка типа отзыва
   const updateFeedback = (feedbackType) => {
     setRating((prevState) => {
       return {
@@ -19,10 +19,24 @@ function App() {
     });
   };
 
+  // сброс состояния рейтинга и удаления данных из локал ст.
+
+  const updateResetRating = () => {
+    setRating({
+      good: 0,
+      neutral: 0,
+      bad: 0,
+    });
+    localStorage.removeItem(`currentFeedback`);
+  };
+
   return (
     <div>
       <Description />
-      <Options updateFeedback={updateFeedback} />
+      <Options
+        updateFeedback={updateFeedback}
+        updateResetRating={updateResetRating}
+      />
       <Feedback rating={rating} />
     </div>
   );
