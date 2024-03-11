@@ -5,10 +5,9 @@ import Description from "./components/Description";
 import Notification from "./components/Notification";
 
 function App() {
-  const [rating, setRating] = useState({
-    good: 0,
-    neutral: 0,
-    bad: 0,
+  const [rating, setRating] = useState(() => {
+    const storedRating = JSON.parse(localStorage.getItem("currentFeedback"));
+    return storedRating || { good: 0, neutral: 0, bad: 0 };
   });
   // обновление состояния и обработка типа отзыва
   const updateFeedback = (feedbackType) => {
@@ -20,34 +19,21 @@ function App() {
     });
   };
 
-  // сброс состояния рейтинга и удаления данных из локал ст.
-
   const updateResetRating = () => {
-    setRating({
-      good: 0,
-      neutral: 0,
-      bad: 0,
-    });
-    localStorage.removeItem(`currentFeedback`);
+    setRating({ good: 0, neutral: 0, bad: 0 });
   };
 
   // Деструктурируем состояние рейтинга для получения отдельных счетчиков отзывоd
   const { good, neutral, bad } = rating;
   const totalFeedback = good + neutral + bad;
-
+  const reviewsCalc = Math.round(
+    ((rating.good + rating.neutral) / totalFeedback) * 100
+  );
   // useEffect для загрузки данных из localStorage при монтировании компонента.
 
   useEffect(() => {
-    if (JSON.parse(localStorage.getItem(`currentFeedback`)) === null) return;
-
-    setRating({ ...JSON.parse(localStorage.getItem(`currentFeedback`)) }); // Устанавливаем состояние рейтинга из данных localStorage.
-  }, []);
-
-  //сохранении данных в localStorage при изменении рейтинга или общего количества отзывов.
-  useEffect(() => {
-    if (totalFeedback === 0) return;
-    localStorage.setItem(`currentFeedback`, JSON.stringify(rating));
-  }, [rating, totalFeedback]);
+    localStorage.setItem("currentFeedback", JSON.stringify(rating));
+  }, [rating]);
 
   return (
     <div>
@@ -58,7 +44,11 @@ function App() {
         amountRating={totalFeedback}
       />
       {totalFeedback > 0 ? (
-        <Feedback rating={rating} totalFeedback={totalFeedback} />
+        <Feedback
+          rating={rating}
+          totalFeedback={totalFeedback}
+          reviewsCalc={reviewsCalc}
+        />
       ) : (
         <Notification />
       )}
